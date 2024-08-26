@@ -22,7 +22,7 @@ const TABLE_ROWS = [
         camid: 1,
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         location: "65a, Hsidc Indl Estate, Faridabad, Faridabad 1",
-        online: true,
+        intensity: 51,
         date: "23/04/18 12:20",
     },
     {
@@ -30,7 +30,7 @@ const TABLE_ROWS = [
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         email: "alexa@creative-tim.com",
         location: "17/18, Adhyaru Indl Est, Sun Mill Compound, Lower Parel 2",
-        online: false,
+        intensity: 20,
         date: "23/04/18 12:20",
     },
     {
@@ -38,7 +38,7 @@ const TABLE_ROWS = [
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         email: "laurent@creative-tim.com",
         location: "5, Nr Kapol Bank, Laxmi Palace, Mathuradas Road, Kandivali (west) 3",
-        online: false,
+        intensity: 40,
         date: "19/09/17 12:20",
     },
     {
@@ -46,14 +46,14 @@ const TABLE_ROWS = [
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         email: "michael@creative-tim.com",
         location: "9th Floor, Nariman Bhavan, Nariman Point 4",
-        online: true,
+        intensity: 30,
         date: "24/12/08 12:20",
     },
     {
         camid: 5,
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         location: "12th Main, 1st Cross,1st Stage,hal, Indira Nagar 5",
-        online: false,
+        intensity: 10,
         date: "04/10/21 12:20",
     },
     {
@@ -61,14 +61,14 @@ const TABLE_ROWS = [
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         email: "michael@creative-tim.com",
         location: "9th Floor, Nariman Bhavan, Nariman Point 6",
-        online: true,
+        intensity: 60,
         date: "24/12/08 12:20",
     },
     {
         camid: 7,
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         location: "12th Main, 1st Cross,1st Stage,hal, Indira Nagar 7",
-        online: false,
+        intensity: 70,
         date: "04/10/21 12:20",
     },
     {
@@ -76,56 +76,64 @@ const TABLE_ROWS = [
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         email: "michael@creative-tim.com",
         location: "9th Floor, Nariman Bhavan, Nariman Point 8",
-        online: true,
+        intensity: 80,
         date: "24/12/08 12:20",
     },
     {
         camid: 9,
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         location: "12th Main, 1st Cross,1st Stage,hal, Indira Nagar 9",
-        online: false,
+        intensity: 90,
         date: "04/10/21 12:20",
     },
     {
         camid: 10,
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         location: "12th Main, 1st Cross,1st Stage,hal, Indira Nagar 10",
-        online: false,
+        intensity: 100,
         date: "04/10/21 12:20",
     },
     {
         camid: 11,
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         location: "9th Floor, Nariman Bhavan, Nariman Point 11",
-        online: true,
+        intensity: 25,
         date: "24/12/08 12:20",
     },
     {
         camid: 12,
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         location: "12th Main, 1st Cross,1st Stage,hal, Indira Nagar 12",
-        online: false,
+        intensity: 36,
         date: "04/10/21 12:20",
     },
     {
         camid: 13,
         videoSrc: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         location: "12th Main, 1st Cross,1st Stage,hal, Indira Nagar 13",
-        online: false,
+        intensity: 49,
         date: "04/10/21 12:20",
     },
 ];
+
+const getIntensityColor = (intensity) => {
+    const hue = ((1 - (intensity / 100)) * 120).toString(10);
+    return `hsl(${hue}, 100%, 50%)`; // Green to Yellow to Red gradient
+};
 
 const CamTable = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 10;
     const tableRef = useRef(null);
 
+    // Sort TABLE_ROWS by intensity in descending order
+    const sortedRows = [...TABLE_ROWS].sort((a, b) => b.intensity - a.intensity);
+
     // Calculate total pages
-    const totalPages = Math.ceil(TABLE_ROWS.length / rowsPerPage);
+    const totalPages = Math.ceil(sortedRows.length / rowsPerPage);
 
     // Get current rows based on the current page
-    const currentRows = TABLE_ROWS.slice(
+    const currentRows = sortedRows.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );
@@ -206,7 +214,7 @@ const CamTable = () => {
                                 </thead>
                                 <tbody>
                                     {currentRows.map(
-                                        ({ videoSrc, camid, location, online, date }, index) => {
+                                        ({ videoSrc, camid, location, intensity, date }, index) => {
                                             const isLast = index === currentRows.length - 1;
                                             const rowClasses = isLast
                                                 ? "p-4"
@@ -248,7 +256,8 @@ const CamTable = () => {
                                                     <td className={`${rowClasses} text-center`}>
                                                         <div className="flex justify-center items-center">
                                                             <div
-                                                                className={`h-6 w-6 rounded-full ${online ? "bg-green-500" : "bg-red-500"}`}
+                                                                className="h-6 w-6 rounded-full"
+                                                                style={{ backgroundColor: getIntensityColor(intensity) }}
                                                             />
                                                         </div>
                                                     </td>
