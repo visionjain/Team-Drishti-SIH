@@ -7,7 +7,7 @@ const getIntensityColor = (intensity) => {
     return `hsl(${hue}, 100%, 50%)`; // Green to Yellow to Red gradient
 };
 
-const VideoItem = ({ videoSrc, camid, intensity, location, openModal }) => {
+const VideoItem = ({ videoSrc, camid, intensity, location, openModal, className }) => {
     const { ref, inView } = useInView({
         triggerOnce: true,
         threshold: 0.1
@@ -18,7 +18,7 @@ const VideoItem = ({ videoSrc, camid, intensity, location, openModal }) => {
     return (
         <div
             ref={ref}
-            className="relative h-24 w-full bg-gray-100 rounded-lg overflow-hidden"
+            className={`relative ${className} bg-gray-100 rounded-lg overflow-hidden`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
