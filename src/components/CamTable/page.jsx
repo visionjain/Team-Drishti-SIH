@@ -11,16 +11,17 @@ import {
     Typography,
     Button,
     CardBody,
-    Chip,
     CardFooter,
     Tabs,
     TabsHeader,
     Tab,
-    IconButton,
-    Tooltip,
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
 } from "@material-tailwind/react";
 
-const TABLE_HEAD = ["Camera ID", "Camera", "Location", "Intensity", "Last Activity", "View", "Action"];
+const TABLE_HEAD = ["Camera ID", "Camera", "Location", "Intensity", "Last Activity", "View"];
 
 const TABS = [
     {
@@ -42,29 +43,24 @@ const getIntensityColor = (intensity) => {
 const CamTable = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [activeTab, setActiveTab] = useState("all");
+    const [modalOpen, setModalOpen] = useState(false); // State for modal
+    const [selectedCamId, setSelectedCamId] = useState(null); // State for selected camera ID
+    const [videoSrc, setVideoSrc] = useState(null); // State for video source
+    const [location, setLocation] = useState(""); // State for location
+    const [intensity, setIntensity] = useState(0); // State for intensity
     const rowsPerPage = 10;
     const tableRef = useRef(null);
-
     // Sort TABLE_ROWS by intensity in descending order
     const sortedRows = [...TABLE_ROWS].sort((a, b) => b.intensity - a.intensity);
-
-    // Calculate total pages
     const totalPages = Math.ceil(sortedRows.length / rowsPerPage);
+    const currentRows = sortedRows.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
-    // Get current rows based on the current page
-    const currentRows = sortedRows.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage
-    );
-
-    // Handle next page
     const handleNextPage = () => {
         if (currentPage < totalPages) {
             setCurrentPage(prevPage => prevPage + 1);
         }
     };
 
-    // Handle previous page
     const handlePreviousPage = () => {
         if (currentPage > 1) {
             setCurrentPage(prevPage => prevPage - 1);
@@ -77,6 +73,23 @@ const CamTable = () => {
             tableRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [currentPage]);
+
+    const openModal = (camId, videoSrc, location, intensity) => {
+        setSelectedCamId(camId);
+        setVideoSrc(videoSrc); // Set the video source
+        setLocation(location); // Set the location
+        setIntensity(intensity); // Set the intensity
+        setModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setSelectedCamId(null);
+        setVideoSrc(null);
+        setLocation(""); // Clear the location
+        setIntensity(0); // Clear the intensity
+        setModalOpen(false);
+    };
+
 
     return (
         <div>
@@ -104,8 +117,8 @@ const CamTable = () => {
                                 <Tabs value={activeTab} className="w-full md:w-max">
                                     <TabsHeader>
                                         {TABS.map(({ label, value }) => (
-                                            <Tab 
-                                                key={value} 
+                                            <Tab
+                                                key={value}
                                                 value={value}
                                                 onClick={() => setActiveTab(value)}
                                             >
@@ -117,7 +130,7 @@ const CamTable = () => {
                             </div>
                         </div>
                     </CardHeader>
-                    
+
                     <CardBody className="overflow-x-auto px-0">
                         {activeTab === "all" ? (
                             <div className="min-w-full max-h-[472px]" ref={tableRef}>
@@ -200,16 +213,13 @@ const CamTable = () => {
                                                             </Typography>
                                                         </td>
                                                         <td className={`${rowClasses} text-center`}>
-                                                            <Button variant="outlined" size="sm">
+                                                            <Button
+                                                                variant="outlined"
+                                                                size="sm"
+                                                                onClick={() => openModal(camid, videoSrc, location, intensity)} // Pass location and intensity
+                                                            >
                                                                 View Feed
                                                             </Button>
-                                                        </td>
-                                                        <td className={`${rowClasses} text-center`}>
-                                                            <Tooltip content="Edit Camera">
-                                                                <IconButton variant="text">
-                                                                    <PencilIcon className="h-4 w-4" />
-                                                                </IconButton>
-                                                            </Tooltip>
                                                         </td>
                                                     </tr>
                                                 );
@@ -222,7 +232,7 @@ const CamTable = () => {
                             <GridView />
                         )}
                     </CardBody>
-                    
+
                     {activeTab === "all" && (
                         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
                             <Typography variant="small" color="blue-gray" className="font-normal">
@@ -240,6 +250,56 @@ const CamTable = () => {
                     )}
                 </Card>
             </div>
+
+            {/* Modal for Camera ID */}
+            <Dialog open={modalOpen} handler={closeModal} size="xl">
+                <DialogHeader>Camera ID: {selectedCamId}</DialogHeader>
+                <DialogBody>
+                    <div className="flex flex-col items-center">
+                        {videoSrc && (
+                            <div className="relative w-full h-80 rounded-lg overflow-hidden">
+                                <video
+                                    src={videoSrc}
+                                    autoPlay
+                                    muted
+                                    playsInline
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                />
+                            </div>
+                        )}
+                        {videoSrc && (
+                            <div className="mt-4 w-full text-center">
+                                <Typography variant="h6">Location</Typography>
+                                <Typography variant="body1" color="blue-gray">
+                                    {location}
+                                </Typography>
+                                <div className="flex justify-center items-center mt-2">
+                                    <div
+                                        className="h-6 w-6 rounded-full"
+                                        style={{ backgroundColor: getIntensityColor(intensity) }}
+                                    />
+                                    <Typography variant="body1" color="blue-gray" className="ml-2">
+                                       Intensity: {intensity}%
+                                    </Typography>
+                                </div>
+                            </div>
+                        )}
+                        <div className="flex mt-4 gap-4">
+                            <Button variant="outlined" color="red" onClick={() => console.log("Alert triggered")}>
+                                Alert
+                            </Button>
+                            <Button variant="outlined" color="gray" onClick={() => console.log("False Alert triggered")}>
+                                False Alert
+                            </Button>
+                        </div>
+                    </div>
+                </DialogBody>
+                <DialogFooter>
+                    <Button variant="text" color="red" onClick={closeModal} className="mr-1">
+                        <span>Close</span>
+                    </Button>
+                </DialogFooter>
+            </Dialog>
         </div>
     );
 }
