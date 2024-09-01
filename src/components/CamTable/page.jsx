@@ -34,7 +34,6 @@ const TABS = [
     },
 ];
 
-
 const getIntensityColor = (intensity) => {
     const hue = ((1 - (intensity / 100)) * 120).toString(10);
     return `hsl(${hue}, 100%, 50%)`; // Green to Yellow to Red gradient
@@ -48,12 +47,20 @@ const CamTable = () => {
     const [videoSrc, setVideoSrc] = useState(null); // State for video source
     const [location, setLocation] = useState(""); // State for location
     const [intensity, setIntensity] = useState(0); // State for intensity
+    const [searchQuery, setSearchQuery] = useState(""); // State for search query
     const rowsPerPage = 10;
     const tableRef = useRef(null);
     // Sort TABLE_ROWS by intensity in descending order
     const sortedRows = [...TABLE_ROWS].sort((a, b) => b.intensity - a.intensity);
-    const totalPages = Math.ceil(sortedRows.length / rowsPerPage);
-    const currentRows = sortedRows.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+    
+    // Filter rows based on search query
+    const filteredRows = sortedRows.filter(row => 
+        String(row.camid).toLowerCase().includes(searchQuery.toLowerCase()) || 
+        String(row.location).toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    const currentRows = filteredRows.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
     const handleNextPage = () => {
         if (currentPage < totalPages) {
@@ -90,7 +97,6 @@ const CamTable = () => {
         setModalOpen(false);
     };
 
-
     return (
         <div>
             <div className="w-full">
@@ -108,8 +114,10 @@ const CamTable = () => {
                             <div className="flex flex-col items-center justify-between md:flex-row">
                                 <div className="w-full md:w-72">
                                     <Input
-                                        label="Search"
+                                        label="Search: location/cam-id"
                                         icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)} // Update search query
                                     />
                                 </div>
                             </div>
@@ -302,6 +310,6 @@ const CamTable = () => {
             </Dialog>
         </div>
     );
-}
+};
 
 export default CamTable;
